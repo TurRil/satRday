@@ -134,7 +134,7 @@ install.packages("BradleyTerry2")
 The main workhorse function for the BTL model is `BTm`. Here is the general syntax:
 
 ```{r eval = F}
-BTM(outcome, player1, player2, ...)
+BTm(outcome, player1, player2, ...)
 ```
 
 - `outcome` is with respect to `player1`
@@ -158,6 +158,9 @@ football <- "http://www.football-data.co.uk/mmz4281/1718/E0.csv"
 data <- read.csv(football, stringsAsFactors = FALSE)
 ```
 
+```{r}
+head(data)
+```
 ---
 
 # EPL Data
@@ -194,6 +197,70 @@ fit <- BTm(outcome, HomeTeam, AwayTeam,
            data = data)
 ```
 
+```
+> fit
+
+Bradley Terry model fit by glm.fit 
+
+Call:  BTm(outcome = outcome, player1 = HomeTeam, player2 = AwayTeam, 
+    data = data)
+
+Coefficients: (log abilities of each team)
+      ..Brighton         ..Chelsea  ..Crystal Palace         ..Everton     ..Southampton         ..Watford       ..West Brom  
+         -1.0498            0.2923           -1.1362           -0.4752           -1.1517           -0.9754           -1.7912  
+    ..Man United       ..Newcastle     ..Bournemouth         ..Burnley       ..Leicester       ..Liverpool           ..Stoke  
+          0.8059           -0.9293           -0.7568           -0.1382           -0.4613            0.3742           -1.1287  
+       ..Swansea    ..Huddersfield       ..Tottenham        ..Man City        ..West Ham  
+         -0.8175           -1.2665            0.4313            2.2403           -1.0309  
+
+Degrees of Freedom: 300 Total (i.e. Null);  281 Residual
+Null Deviance:	    415.9 
+Residual Deviance: 338.5 	AIC: 376.5
+```
+
+> summary(fit)
+
+Call:
+BTm(outcome = outcome, player1 = HomeTeam, player2 = AwayTeam, 
+    data = data)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-2.3578  -1.0383  -0.4001   0.8885   2.0933  
+
+Coefficients:
+                 Estimate Std. Error z value Pr(>|z|)   
+..Brighton        -1.0498     0.5533  -1.897  0.05778 . 
+..Chelsea          0.2923     0.5685   0.514  0.60714   
+..Crystal Palace  -1.1362     0.5651  -2.011  0.04436 * 
+..Everton         -0.4752     0.5475  -0.868  0.38542   
+..Southampton     -1.1517     0.5684  -2.026  0.04276 * 
+..Watford         -0.9754     0.5557  -1.755  0.07921 . 
+..West Brom       -1.7912     0.5968  -3.001  0.00269 **
+..Man United       0.8059     0.6061   1.330  0.18361   
+..Newcastle       -0.9293     0.5644  -1.646  0.09967 . 
+..Bournemouth     -0.7568     0.5518  -1.371  0.17022   
+..Burnley         -0.1382     0.5648  -0.245  0.80675   
+..Leicester       -0.4613     0.5613  -0.822  0.41124   
+..Liverpool        0.3742     0.5693   0.657  0.51096   
+..Stoke           -1.1287     0.5699  -1.981  0.04762 * 
+..Swansea         -0.8175     0.5496  -1.487  0.13689   
+..Huddersfield    -1.2665     0.5735  -2.208  0.02722 * 
+..Tottenham        0.4313     0.5703   0.756  0.44955   
+..Man City         2.2403     0.8323   2.692  0.00711 **
+..West Ham        -1.0309     0.5620  -1.834  0.06659 . 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 415.89  on 300  degrees of freedom
+Residual deviance: 338.46  on 281  degrees of freedom
+AIC: 376.46
+
+Number of Fisher Scoring iterations: 5
+
+
 ---
 
 # BTm Methods
@@ -226,11 +293,17 @@ abilities <- data.frame(
 abilities$Team <- factor(abilities$Team, 
                         levels = abilities$Team[order(abilities$Ability)],
                         order = T)
+
+head(abilities)
 ```
 
 ---
 
 ```{r echo = FALSE}
+
+# plot with point range to also show uncertainty/variablility
+# relative distances between points would be the same
+
 abilities %>%
   ggplot(aes(y = Ability, ymin = Ability - 2 * SE, ymax = Ability + 2 * SE, x = Team)) + 
   geom_pointrange(col = "#e5952c") + 
@@ -307,6 +380,11 @@ fit <- BTm(outcome, Home, Away,
 summary(fit)$coef["at.home",]
 ```
 
+Negative effect !? - so home advantage doesn't really exists
+
+  Estimate Std. Error    z value   Pr(>|z|) 
+-0.1893985  0.1325776 -1.4285856  0.1531234 
+
 ---
 
 # Solution: Change In Abilities
@@ -374,6 +452,8 @@ data %>%
   theme_hc()
 ```
 
+about a third of games
+
 ---
 
 ```{r echo = FALSE}
@@ -423,10 +503,17 @@ fit <- BTm(outcome, Home, Away,
 summary(fit)$coef["at.home",]
 ```
 
+bradle terry uses dual outcome win/loss
+
+there are extenstions that have win/draw/loss models
+
+
 ---
 
 # Resources
 
+Theory of the model
 - Cattelan, M, Varin, C and Firth, D (2013). Dynamic Bradley-Terry modelling of sports tournaments. Journal of the Royal Statistical Society C 62, 135–150.
 
+The code for the model
 - Turner, H and Firth, D (2012). Bradley-Terry Models in R: The `BradleyTerry2` Package. Journal of Statistical Software 48(9), 1–21.
